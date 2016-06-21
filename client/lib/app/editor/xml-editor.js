@@ -9,6 +9,8 @@ var debug = require('debug')('xml-editor');
 
 var CodeMirror = require('codemirror');
 
+var HistoryWarningOverlay = require('./xml-history-warning-overlay');
+
 // xml syntax highlighting
 require('codemirror/mode/xml/xml');
 
@@ -43,6 +45,10 @@ function XMLEditor(options) {
     // let code mirror update its look and feel
     this.getCodeMirror().refresh();
   });
+
+  // initially show warning on XML change
+  this.showHistoryWarning = true;
+
 }
 
 inherits(XMLEditor, BaseEditor);
@@ -51,6 +57,9 @@ module.exports = XMLEditor;
 
 
 XMLEditor.prototype.render = function() {
+  var codemirror = this.codemirror;
+
+  var dirty = codemirror && (this.lastXML !== codemirror.getValue());
 
   return (
     <div className="xml-editor" key={ this.id + '#xml' }>
@@ -59,6 +68,9 @@ XMLEditor.prototype.render = function() {
            onAppend={ this.compose('mountEditor') }
            onRemove={ this.compose('unmountEditor') }>
       </div>
+      <HistoryWarningOverlay
+          dirty={ this.showHistoryWarning && dirty }
+          onClose={ this.compose( 'hideHistoryWarning' ) } />
     </div>
   );
 };
@@ -210,4 +222,11 @@ XMLEditor.prototype.saveXML = function(done) {
   this.emit('saved', saveContext);
 
   done(null, xml);
+};
+
+XMLEditor.prototype.hideHistoryWarning = function() {
+  this.showHistoryWarning = false;
+
+  this.updateState();
+  // this.emit('changed');
 };

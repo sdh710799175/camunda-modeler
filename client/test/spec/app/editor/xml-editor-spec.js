@@ -7,6 +7,9 @@ var XMLEditor = require('app/editor/xml-editor');
 var initialXML = require('app/tabs/bpmn/initial.bpmn'),
     otherXML = require('test/fixtures/other.bpmn');
 
+var select = require('test/helper/vdom').select,
+    render = require('test/helper/vdom').render;
+
 function createEditor() {
   return new XMLEditor({});
 }
@@ -92,6 +95,56 @@ describe('XMLEditor', function() {
 
       editor.setXML(initialXML);
       editor.mountEditor($el);
+    });
+
+  });
+
+
+  describe('history warning overlay', function() {
+
+
+    it('should show history warning overlay on dirty if not dismissed before', function() {
+
+      // given
+      editor.getCodeMirror().setValue('foo');
+      editor.updateState();
+
+      // when
+      var tree = render(editor);
+
+      // then
+      expect(select('[ref=warnings-overlay]', tree)).to.exist;
+    });
+
+
+    it('should not show history warning overlay on dirty if dismissed before', function() {
+
+      // given
+      editor.showHistoryWarning = false;
+      editor.getCodeMirror().setValue('foo');
+      editor.updateState();
+
+      // when
+      var tree = render(editor);
+
+      // then
+      expect(select('[ref=warnings-overlay]', tree)).not.to.exist;
+    });
+
+
+    it('should close history warning overlay', function() {
+
+      // given
+      editor.getCodeMirror().setValue('foo');
+      editor.updateState();
+      render(editor);
+
+      // when
+      editor.hideHistoryWarning();
+      var tree = render(editor);
+
+      // then
+      expect(select('[ref=warnings-overlay]', tree)).not.to.exist;
     });
 
   });
