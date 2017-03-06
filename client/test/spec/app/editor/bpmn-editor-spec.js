@@ -239,6 +239,8 @@ describe('BpmnEditor', function() {
 
     it('should log load error', function(done) {
 
+      this.timeout(5000);
+
       var templatesLoaded;
 
       // given
